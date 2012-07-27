@@ -423,16 +423,19 @@ int STORE_list_certificate_end(STORE *s, void *handle)
 
 int STORE_list_certificate_endp(STORE *s, void *handle)
 	{
+	int ret;
+
 	check_store(s,STORE_F_STORE_LIST_CERTIFICATE_ENDP,
 		list_object_endp,STORE_R_NO_LIST_OBJECT_ENDP_FUNCTION);
 
-	if (!s->meth->list_object_endp(s, handle))
+	ret = s->meth->list_object_endp(s, handle);
+	if (ret < 0)
 		{
 		STOREerr(STORE_F_STORE_LIST_CERTIFICATE_ENDP,
 			STORE_R_FAILED_LISTING_CERTIFICATES);
-		return 0;
+		return -1;
 		}
-	return 1;
+	return ret ? 1 : 0;
 	}
 
 EVP_PKEY *STORE_generate_key(STORE *s, OPENSSL_ITEM attributes[],
@@ -644,16 +647,19 @@ int STORE_list_private_key_end(STORE *s, void *handle)
 
 int STORE_list_private_key_endp(STORE *s, void *handle)
 	{
+	int ret;
+
 	check_store(s,STORE_F_STORE_LIST_PRIVATE_KEY_ENDP,
 		list_object_endp,STORE_R_NO_LIST_OBJECT_ENDP_FUNCTION);
 
-	if (!s->meth->list_object_endp(s, handle))
+	ret = s->meth->list_object_endp(s, handle);
+	if (ret < 0)
 		{
 		STOREerr(STORE_F_STORE_LIST_PRIVATE_KEY_ENDP,
 			STORE_R_FAILED_LISTING_KEYS);
-		return 0;
+		return -1;
 		}
-	return 1;
+	return ret ? 1 : 0;
 	}
 
 EVP_PKEY *STORE_get_public_key(STORE *s, OPENSSL_ITEM attributes[],
@@ -1033,16 +1039,19 @@ int STORE_list_crl_end(STORE *s, void *handle)
 
 int STORE_list_crl_endp(STORE *s, void *handle)
 	{
+	int ret;
+
 	check_store(s,STORE_F_STORE_LIST_CRL_ENDP,
 		list_object_endp,STORE_R_NO_LIST_OBJECT_ENDP_FUNCTION);
 
-	if (!s->meth->list_object_endp(s, handle))
+	ret = s->meth->list_object_endp(s, handle);
+	if (ret < 0)
 		{
 		STOREerr(STORE_F_STORE_LIST_CRL_ENDP,
 			STORE_R_FAILED_LISTING_KEYS);
-		return 0;
+		return -1;
 		}
-	return 1;
+	return ret ? 1 : 0;
 	}
 
 int STORE_store_number(STORE *s, BIGNUM *data, OPENSSL_ITEM attributes[],
@@ -1273,14 +1282,21 @@ struct STORE_attr_info_st
 	size_t value_sizes[STORE_ATTR_TYPE_NUM+1];
 	};
 
-#define ATTR_IS_SET(a,i)	((i) > 0 && (i) < STORE_ATTR_TYPE_NUM \
+#define ATTR_IS_SET(a,i)	((i) > 0 && (i) <= STORE_ATTR_TYPE_NUM \
 				&& ((a)->set[(i) / 8] & (1 << ((i) % 8))))
 #define SET_ATTRBIT(a,i)	((a)->set[(i) / 8] |= (1 << ((i) % 8)))
 #define CLEAR_ATTRBIT(a,i)	((a)->set[(i) / 8] &= ~(1 << ((i) % 8)))
 
 STORE_ATTR_INFO *STORE_ATTR_INFO_new(void)
 	{
-	return (STORE_ATTR_INFO *)OPENSSL_malloc(sizeof(STORE_ATTR_INFO));
+	STORE_ATTR_INFO *ret;
+
+	ret=(STORE_ATTR_INFO *)OPENSSL_malloc(sizeof(STORE_ATTR_INFO));
+	if (ret)
+		{
+		memset(ret, 0, sizeof(STORE_ATTR_INFO));
+		}
+	return(ret);
 	}
 static void STORE_ATTR_INFO_attr_free(STORE_ATTR_INFO *attrs,
 	STORE_ATTR_TYPES code)
@@ -1393,7 +1409,10 @@ int STORE_ATTR_INFO_set_cstr(STORE_ATTR_INFO *attrs, STORE_ATTR_TYPES code,
 	if (!ATTR_IS_SET(attrs,code))
 		{
 		if ((attrs->values[code].cstring = BUF_strndup(cstr, cstr_size)))
+			{
+			SET_ATTRBIT(attrs,code);
 			return 1;
+			}
 		STOREerr(STORE_F_STORE_ATTR_INFO_SET_CSTR,
 			ERR_R_MALLOC_FAILURE);
 		return 0;

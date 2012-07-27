@@ -361,7 +361,7 @@ int tls1_change_cipher_state(SSL *s, int which)
 	{
         int i;
         for (i=0; i<s->s3->tmp.key_block_length; i++)
-		printf("%02x", key_block[i]);  printf("\n");
+		printf("%02x", s->s3->tmp.key_block[i]);  printf("\n");
         }
 #endif	/* KSSL_DEBUG */
 
@@ -1134,7 +1134,7 @@ int tls1_export_keying_material(SSL *s, unsigned char *out, size_t olen,
 	int rv;
 
 #ifdef KSSL_DEBUG
-	printf ("tls1_export_keying_material(%p,%p,%d,%s,%d,%p,%d)\n", s, out, olen, label, llen, p, plen);
+	printf ("tls1_export_keying_material(%p,%p,%d,%s,%d,%p,%d)\n", s, out, olen, label, llen, context, contextlen);
 #endif	/* KSSL_DEBUG */
 
 	buff = OPENSSL_malloc(olen);

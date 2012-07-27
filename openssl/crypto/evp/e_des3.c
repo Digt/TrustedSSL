@@ -124,7 +124,7 @@ static int des_ede_cbc_cipher(EVP_CIPHER_CTX *ctx, unsigned char *out,
 #ifdef KSSL_DEBUG
 	{
         int i;
-        char *cp;
+        //char *cp;
 	printf("des_ede_cbc_cipher(ctx=%lx, buflen=%d)\n", ctx, ctx->buf_len);
 	printf("\t iv= ");
         for(i=0;i<8;i++)
