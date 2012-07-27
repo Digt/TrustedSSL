@@ -1,0 +1,7 @@
+/lib
+/*.bak
+/*.s
+/*.save
+/buildinf.h
+/opensslconf.h
+/opensslconf.h.bak
