@@ -2756,6 +2756,7 @@ static int www_body(char *hostname, int s, unsigned char *context)
 				BIO_printf(io,"Client certificate\n");
 				X509_print(io,peer);
 				PEM_write_bio_X509(io,peer);
+				X509_free(peer);
 				}
 			else
 				BIO_puts(io,"no client certificate available\n");
